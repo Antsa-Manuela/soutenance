@@ -1,5 +1,11 @@
 <?php
 // backend/login.php
+echo json_encode([
+  "dir" => __DIR__,
+  "files" => scandir(__DIR__)
+]);
+exit;
+
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
