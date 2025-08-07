@@ -42,7 +42,7 @@ const SignUpScreen = () => {
           email: form1.email,
           nomComplet: form1.fullName,
           motDePasse: form1.password,
-          dateNaissance: form2.birthDate.toISOString().split('T')[0],
+          dateNaissance: form2.birthDate.toISOString().split('T')[0], // format YYYY-MM-DD
           sexe: form2.gender,
           ville: form2.city,
           cin: form2.cin,
