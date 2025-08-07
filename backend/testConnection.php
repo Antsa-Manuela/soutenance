@@ -8,7 +8,7 @@ try {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
 
-    $stmt = $pdo->query("SELECT * FROM hotels LIMIT 1");
+    $stmt = $pdo->query('SELECT * FROM "Hotel" LIMIT 1');
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
     echo json_encode([
