@@ -1,8 +1,13 @@
 // src/screens/HomeScreen.js
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { getHotels } from '../services/api';
+
+
+const router = useRouter();
 
 const HomeScreen = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,6 +17,7 @@ const HomeScreen = () => {
   const [showDeparturePicker, setShowDeparturePicker] = useState(false);
   const [params, setParams] = useState({ chambres: 1, adultes: 2, enfants: 0, animaux: 0 });
   const [hotels, setHotels] = useState([]);
+  const navigation = useNavigation();
 
   useEffect(() => {
     async function fetchData() {
@@ -26,21 +32,26 @@ const HomeScreen = () => {
   }, []);
 
   const renderHotel = ({ item }) => (
-    <TouchableOpacity style={styles.hotelCard} activeOpacity={0.85}>
-      {item.image_url && (
-        <Image source={{ uri: item.image_url }} style={styles.hotelImage} />
-      )}
-      <View style={styles.hotelInfoContainer}>
-        <Text style={styles.hotelName}>{item.nom}</Text>
-        <Text style={styles.hotelLocation}>{item.localisation}</Text>
-        <Text style={styles.hotelDescription} numberOfLines={2}>{item.description}</Text>
-        <View style={styles.priceContainer}>
-          <Text style={styles.hotelPrice}>{item.prixParNuit} Ar</Text>
-          <Text style={styles.perNight}> / nuit</Text>
-        </View>
+  <TouchableOpacity
+    style={styles.hotelCard}
+    activeOpacity={0.85}
+    onPress={() => navigation.navigate('HotelDetailsScreen', { hotelId: item.id_hotel })}
+    >
+    {item.image_url && (
+      <Image source={{ uri: item.image_url }} style={styles.hotelImage} />
+    )}
+    <View style={styles.hotelInfoContainer}>
+      <Text style={styles.hotelName}>{item.nom}</Text>
+      <Text style={styles.hotelLocation}>{item.localisation}</Text>
+      <Text style={styles.hotelDescription} numberOfLines={2}>{item.description}</Text>
+      <View style={styles.priceContainer}>
+        <Text style={styles.hotelPrice}>{item.prixParNuit} Ar</Text>
+        <Text style={styles.perNight}> / nuit</Text>
       </View>
-    </TouchableOpacity>
-  );
+    </View>
+  </TouchableOpacity>
+);
+
 
   return (
     <View style={styles.container}>

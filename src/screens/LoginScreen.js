@@ -14,12 +14,12 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.0.142/soutenance/login.php', {
+      const response = await fetch('https://soutenance-backend.onrender.com/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, motDePasse: password }),
       });
-
+     
       const data = await response.json();
       if (data.success) {
         router.push('/home');

@@ -35,7 +35,7 @@ const SignUpScreen = () => {
     }
 
     try {
-      const response = await fetch('http://192.168.0.142/soutenance/register.php', {
+      const response = await fetch('https://soutenance-backend.onrender.com/register.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
