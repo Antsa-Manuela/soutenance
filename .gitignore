@@ -38,3 +38,8 @@ yarn-error.*
 
 app-example
 /vendor/
+# PHP logs and sensitive files
+*.log
+*.bak
+*.tmp
+*.env
