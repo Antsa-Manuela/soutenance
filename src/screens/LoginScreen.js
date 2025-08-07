@@ -19,9 +19,11 @@ const LoginScreen = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, motDePasse: password }),
       });
-     
+  
       const data = await response.json();
-      if (data.success) {
+      if (data.success && data.token) {
+        await AsyncStorage.setItem('userToken', data.token); // ← stockage du token
+        Alert.alert('Succès', 'Connexion réussie');
         router.push('/home');
       } else {
         Alert.alert('Erreur', data.message || 'Email ou mot de passe incorrect');
