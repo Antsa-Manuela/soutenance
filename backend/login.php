@@ -3,6 +3,7 @@ header('Content-Type: application/json');
 
 // 🔐 Inclusion des dépendances
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/api/db.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Firebase\JWT\JWT;
