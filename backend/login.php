@@ -1,5 +1,4 @@
 <?php
-// backend/login.php
 header('Content-Type: application/json');
 
 // 🔐 Inclusion des dépendances
@@ -52,16 +51,18 @@ if ($user) {
 
   echo json_encode([
     "success" => true,
-    "token" => $jwt
+    "token" => $jwt,
+    "user" => [
+      "id" => $user['id'],
+      "nomComplet" => $user['nomComplet'],
+      "email" => $email
+    ]
   ]);
 } else {
   http_response_code(401);
   echo json_encode([
     "success" => false,
-    "message" => "Identifiants incorrects",
-    // 🔍 Test temporaire pour debug
-    "dir" => __DIR__,
-    "files" => scandir(__DIR__)
+    "message" => "Identifiants incorrects"
   ]);
 }
 ?>
