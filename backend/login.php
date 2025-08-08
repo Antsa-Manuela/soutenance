@@ -6,22 +6,13 @@ header('Content-Type: application/json');
 // 🔐 Inclusion des dépendances
 require_once __DIR__ . '/db.php';
 
+use Firebase\JWT\JWT; 
+use Firebase\JWT\Key;
+
 // Vérifier si le fichier vendor existe avant de l'inclure
 $vendorPath = __DIR__ . '/vendor/autoload.php';
 if (file_exists($vendorPath)) {
     require_once $vendorPath;
-    use Firebase\JWT\JWT; 
-    /* [{
-	"resource": "/home/manuela-rakotoarivony/Documents/soutenance/backend/login.php",
-	"owner": "_generated_diagnostic_collection_name_#0",
-	"severity": 8,
-	"message": "syntax error, unexpected token \"use\"",
-	"startLineNumber": 13,
-	"startColumn": 1,
-	"endLineNumber": 13,
-	"endColumn": 2147483648
-}] */
-    use Firebase\JWT\Key;
 } else {
     error_log("Vendor autoload not found");
 }
