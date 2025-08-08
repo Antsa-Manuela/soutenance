@@ -304,20 +304,13 @@ const LoginScreen = () => {
         })
       });
 
-      const responseText = await response.text();
-      console.log('Réponse serveur:', responseText);
-
-      let responseData;
-      try {
-        responseData = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Erreur parsing JSON:', e);
-        throw new Error('Réponse serveur invalide');
-      }
-
+      // Vérifier d'abord le statut HTTP
       if (!response.ok) {
-        throw new Error(responseData.message || 'Erreur de connexion');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Erreur de connexion');
       }
+
+      const responseData = await response.json();
 
       if (responseData.success) {
         await AsyncStorage.setItem('userToken', responseData.token);
@@ -333,6 +326,7 @@ const LoginScreen = () => {
       setIsLoading(false);
     }
   };
+
 
   return (
     <ScrollView 
