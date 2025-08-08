@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
 
 export default LoginScreen; */
 
-import { useRouter } from 'expo-router';
+/* import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -258,6 +258,177 @@ const styles = StyleSheet.create({
   link: {
     color: '#007bff',
     fontSize: 14,
+  },
+});
+
+export default LoginScreen; */
+
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity
+} from 'react-native';
+
+const LoginScreen = () => {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('https://soutenance-backend.onrender.com/login.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          motDePasse: password.trim()
+        })
+      });
+
+      const responseText = await response.text();
+      console.log('Réponse serveur:', responseText);
+
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Erreur parsing JSON:', e);
+        throw new Error('Réponse serveur invalide');
+      }
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Erreur de connexion');
+      }
+
+      if (responseData.success) {
+        await AsyncStorage.setItem('userToken', responseData.token);
+        await AsyncStorage.setItem('userData', JSON.stringify(responseData.user));
+        router.replace('/home');
+      } else {
+        Alert.alert('Erreur', responseData.message || 'Authentification échouée');
+      }
+    } catch (error) {
+      console.error('Erreur connexion:', error);
+      Alert.alert('Erreur', error.message || 'Une erreur est survenue');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <ScrollView 
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text style={styles.title}>Connexion</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        placeholderTextColor="#999"
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Mot de passe"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        placeholderTextColor="#999"
+      />
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleLogin}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Se connecter</Text>
+        )}
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.linkContainer}
+        onPress={() => router.push('/signup')}
+      >
+        <Text style={styles.link}>Pas encore inscrit ? Créer un compte</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 28,
+    marginBottom: 24,
+    textAlign: 'center',
+    fontWeight: '700',
+    color: '#3C1518',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#A44200',
+    backgroundColor: '#fff',
+    padding: 14,
+    marginBottom: 16,
+    borderRadius: 8,
+    fontSize: 16,
+    color: '#3C1518',
+  },
+  button: {
+    backgroundColor: '#69140E',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 24,
+    justifyContent: 'center',
+    height: 50,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  link: {
+    marginTop: 20,
+    color: '#D58936',
+    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  linkContainer: {
+    alignItems: 'center',
   },
 });
 
