@@ -1,5 +1,5 @@
 // src/screens/LoginScreen.js
-import { useRouter } from 'expo-router';
+/* import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -97,6 +97,167 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600',
     fontSize: 16,
+  },
+});
+
+export default LoginScreen; */
+
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  Alert,
+  AsyncStorage,
+  ScrollView, StyleSheet,
+  Text, TextInput, TouchableOpacity
+} from 'react-native';
+
+const LoginScreen = () => {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('https://soutenance-backend.onrender.com/login.php', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ 
+          email: email.trim(), 
+          motDePasse: password 
+        }),
+      });
+
+      // Vérifier le statut de la réponse
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const text = await response.text();
+      let data;
+      
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('Invalid JSON:', text);
+        throw new Error('Réponse serveur invalide');
+      }
+
+      if (data.success && data.token) {
+        await AsyncStorage.setItem('userToken', data.token);
+        await AsyncStorage.setItem('userData', JSON.stringify(data.user));
+        Alert.alert('Succès', 'Connexion réussie');
+        router.replace('/home');
+      } else {
+        Alert.alert('Erreur', data.message || 'Email ou mot de passe incorrect');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Erreur', error.message || 'Une erreur est survenue');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <ScrollView 
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text style={styles.title}>Connexion</Text>
+
+      <TextInput 
+        style={styles.input} 
+        placeholder="Email" 
+        placeholderTextColor="#999" 
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      
+      <TextInput 
+        style={styles.input} 
+        placeholder="Mot de passe" 
+        placeholderTextColor="#999" 
+        secureTextEntry 
+        value={password}
+        onChangeText={setPassword}
+      />
+
+      <TouchableOpacity 
+        style={[styles.button, isLoading && styles.disabledButton]}
+        onPress={handleLogin}
+        disabled={isLoading}
+      >
+        <Text style={styles.buttonText}>
+          {isLoading ? 'Chargement...' : 'Se connecter'}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.linkContainer}
+        onPress={() => router.push('/signup')}
+      >
+        <Text style={styles.link}>Pas encore inscrit ? Créer un compte</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  input: {
+    height: 50,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#007bff',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  linkContainer: {
+    alignItems: 'center',
+  },
+  link: {
+    color: '#007bff',
+    fontSize: 14,
   },
 });
 

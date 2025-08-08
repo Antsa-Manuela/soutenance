@@ -1,71 +1,113 @@
 <?php
-error_log("register.php reached");
+error_log("login.php reached");
 
 header('Content-Type: application/json');
 
 // 🔐 Inclusion des dépendances
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/api/db.php';
-require_once __DIR__ . '/vendor/autoload.php';
 
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
+// Vérifier si le fichier vendor existe avant de l'inclure
+$vendorPath = __DIR__ . '/vendor/autoload.php';
+if (file_exists($vendorPath)) {
+    require_once $vendorPath;
+    use Firebase\JWT\JWT; 
+    /* [{
+	"resource": "/home/manuela-rakotoarivony/Documents/soutenance/backend/login.php",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"severity": 8,
+	"message": "syntax error, unexpected token \"use\"",
+	"startLineNumber": 13,
+	"startColumn": 1,
+	"endLineNumber": 13,
+	"endColumn": 2147483648
+}] */
+    use Firebase\JWT\Key;
+} else {
+    error_log("Vendor autoload not found");
+}
 
-// 🔑 Clé secrète (à définir dans Render > Environment)
-$secretKey = getenv('JWT_SECRET');
+// 🔑 Clé secrète (doit être définie dans les variables d'environnement)
+$secretKey = getenv('JWT_SECRET') ?: 'default_secret_key_for_dev';
 
-// 📥 Lecture des données JSON envoyées par l'app
-$data = json_decode(file_get_contents("php://input"), true);
+// 📥 Lecture des données JSON
+$json = file_get_contents("php://input");
+if ($json === false) {
+    http_response_code(400);
+    echo json_encode([
+        "success" => false,
+        "message" => "Données JSON invalides"
+    ]);
+    exit;
+}
+
+$data = json_decode($json, true);
+if ($data === null) {
+    http_response_code(400);
+    echo json_encode([
+        "success" => false,
+        "message" => "JSON invalide"
+    ]);
+    exit;
+}
+
 $email = $data["email"] ?? '';
 $mdp = $data["motDePasse"] ?? '';
 
 // 🛑 Vérification des champs
-if (!$email || !$mdp) {
-  http_response_code(400);
-  echo json_encode([
-    "success" => false,
-    "message" => "Email et mot de passe requis"
-  ]);
-  exit;
+if (empty($email) || empty($mdp)) {
+    http_response_code(400);
+    echo json_encode([
+        "success" => false,
+        "message" => "Email et mot de passe requis"
+    ]);
+    exit;
 }
 
-// 🔎 Requête SQL sécurisée
-$query = $conn->prepare(
-  'SELECT id, "nomComplet" FROM "Utilisateur" WHERE email = :email AND "motDePasse" = :mdp'
-);
-$query->execute([
-  'email' => $email,
-  'mdp' => $mdp
-]);
+try {
+    // 🔎 Requête SQL sécurisée
+    $query = $conn->prepare(
+        'SELECT id, "nomComplet" FROM "Utilisateur" WHERE email = :email AND "motDePasse" = :mdp'
+    );
+    $query->execute([
+        'email' => $email,
+        'mdp' => $mdp
+    ]);
 
-$user = $query->fetch(PDO::FETCH_ASSOC);
+    $user = $query->fetch(PDO::FETCH_ASSOC);
 
-// ✅ Si l'utilisateur est trouvé
-if ($user) {
-  $payload = [
-    'iat' => time(),
-    'exp' => time() + 3600,
-    'id' => $user['id'],
-    'nomComplet' => $user['nomComplet'],
-    'email' => $email
-  ];
+    if ($user) {
+        $payload = [
+            'iat' => time(),
+            'exp' => time() + 3600,
+            'id' => $user['id'],
+            'nomComplet' => $user['nomComplet'],
+            'email' => $email
+        ];
 
-  $jwt = JWT::encode($payload, $secretKey, 'HS256');
+        $jwt = JWT::encode($payload, $secretKey, 'HS256');
 
-  echo json_encode([
-    "success" => true,
-    "token" => $jwt,
-    "user" => [
-      "id" => $user['id'],
-      "nomComplet" => $user['nomComplet'],
-      "email" => $email
-    ]
-  ]);
-} else {
-  http_response_code(401);
-  echo json_encode([
-    "success" => false,
-    "message" => "Identifiants incorrects"
-  ]);
+        echo json_encode([
+            "success" => true,
+            "token" => $jwt,
+            "user" => [
+                "id" => $user['id'],
+                "nomComplet" => $user['nomComplet'],
+                "email" => $email
+            ]
+        ]);
+    } else {
+        http_response_code(401);
+        echo json_encode([
+            "success" => false,
+            "message" => "Identifiants incorrects"
+        ]);
+    }
+} catch (PDOException $e) {
+    error_log("Database error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "Erreur serveur"
+    ]);
 }
 ?>
