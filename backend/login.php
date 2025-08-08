@@ -1,4 +1,6 @@
 <?php
+error_log("register.php reached");
+
 header('Content-Type: application/json');
 
 // 🔐 Inclusion des dépendances

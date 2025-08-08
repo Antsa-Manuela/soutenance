@@ -1,4 +1,5 @@
 <?php
+error_log("register.php reached");
 // backend/register.php
 require_once 'db.php';
 
